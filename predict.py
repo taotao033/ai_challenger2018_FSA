@@ -22,7 +22,7 @@ def load_trained_params(trained_dir):
 	embedding_mat = np.array(fetched_embedding, dtype = np.float32)
 	return params, words_index, labels, embedding_mat
 
-def load_test_data(test_file, labels):
+def load_test_data(test_file, labels, column):
 	df = pd.read_csv(test_file, sep=',')
 	select = ['content']
 
@@ -35,8 +35,8 @@ def load_test_data(test_file, labels):
 	label_dict = dict(zip(labels, one_hot))
 
 	y_ = None
-	if 'location_traffic_convenience' in df.columns:
-		select.append('location_traffic_convenience')
+	if column in df.columns:
+		select.append(column)
 		y_ = df[select[1]].apply(lambda x: label_dict[x]).tolist()
 
 	not_select = list(set(df.columns) - set(select))
@@ -55,14 +55,16 @@ def map_word_to_index(examples, words_index):
 		x_.append(temp)
 	return x_
 
-def predict_unseen_data():
-	trained_dir = sys.argv[1]
+def predict_unseen_data(column, model_path, pre_path):
+	#trained_dir = sys.argv[1]
+	trained_dir = model_path
 	if not trained_dir.endswith('/'):
 		trained_dir += '/'
-	test_file = sys.argv[2]
+	#test_file = sys.argv[2]
+	test_file = pre_path
 
 	params, words_index, labels, embedding_mat = load_trained_params(trained_dir)
-	x_, y_, df = load_test_data(test_file, labels)
+	x_, y_, df = load_test_data(test_file, labels, column)
 	x_ = data_helper.pad_sentences(x_, forced_sequence_length=params['sequence_length'])
 	x_ = map_word_to_index(x_, words_index)
 
@@ -71,7 +73,7 @@ def predict_unseen_data():
 		y_test = np.asarray(y_)
 
 	timestamp = trained_dir.split('/')[-2].split('_')[-1]
-	predicted_dir = './predicted_results_' + timestamp + '/'
+	predicted_dir = './predicted_results_' + column + '/'
 	if os.path.exists(predicted_dir):
 		shutil.rmtree(predicted_dir)
 	os.makedirs(predicted_dir)
@@ -133,6 +135,34 @@ def predict_unseen_data():
 
 			logging.critical('Prediction is complete, all files have been saved: {}'.format(predicted_dir))
 
+
+column_list = [
+	 "location_traffic_convenience",
+	 "location_distance_from_business_district",
+	 "location_easy_to_find",
+	 "service_wait_time",
+	 "service_waiters_attitude",
+	 "service_parking_convenience",
+	 "service_serving_speed",
+	 "price_level",
+	 "price_cost_effective",
+	 "price_discount",
+	 "environment_decoration",
+	 "environment_noise",
+	 "environment_space",
+	 "environment_cleaness",
+	 "dish_portion",
+	 "dish_taste",
+	 "dish_look",
+	 "dish_recommendation",
+	 "others_overall_experience",
+	 "others_willing_to_consume_again"
+]
+
 if __name__ == '__main__':
 	# python3 predict.py ./trained_results_1478563595/ ./dataset/valid_content_after_cut.csv
-	predict_unseen_data()
+
+	for column in column_list:
+		model_path = "./trained_results_" + column
+		pre_path = "./dataset/valid_content_after_cut.csv"
+		predict_unseen_data(column, model_path, pre_path)
