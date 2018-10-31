@@ -324,9 +324,9 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 			yield shuffled_data[start_index:end_index]
 
 
-def load_data(filename , max_length=1000):
+def load_data(filename, max_length, column):
 	df = pd.read_csv(filename, encoding="utf-8")
-	selected = ['content', 'location_traffic_convenience']
+	selected = ['content', column]
 	non_selected = list(set(df.columns) - set(selected))
 
 	df = df.drop(non_selected, axis=1)

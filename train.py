@@ -14,17 +14,19 @@ from sklearn.model_selection import train_test_split
 
 logging.getLogger().setLevel(logging.INFO)
 
-def train_cnn_rnn(max_length=1000):
-	input_file = sys.argv[1]
-	x_, y_, vocabulary, vocabulary_inv, df, labels = data_helper.load_data(input_file, max_length=max_length)
+def train_cnn_rnn(path, max_length, column):
+	#input_file = sys.argv[1]
+	x_, y_, vocabulary, vocabulary_inv, df, labels = data_helper.load_data(filename=path,
+																		   max_length=max_length, column=column)
 
-	training_config = sys.argv[2]
+	#training_config = sys.argv[2]
+	training_config = "./training_config.json"
 	params = json.loads(open(training_config).read())
 
 	# Assign a 300 dimension vector to each word
 	word_embeddings = data_helper.load_embeddings(vocabulary)
 	embedding_mat = [word_embeddings[word] for index, word in enumerate(vocabulary_inv)]
-	embedding_mat = np.array(embedding_mat, dtype = np.float32)
+	embedding_mat = np.array(embedding_mat, dtype=np.float32)
 
 	# Split the original dataset into train set and test set
 	x, x_test, y, y_test = train_test_split(x_, y_, test_size=0.1)
@@ -37,7 +39,7 @@ def train_cnn_rnn(max_length=1000):
 
 	# Create a directory, everything related to the training will be saved in this directory
 	timestamp = str(int(time.time()))
-	trained_dir = './trained_results_' + timestamp + '/'
+	trained_dir = './trained_results_' + column + "_" + timestamp + '/'
 	if os.path.exists(trained_dir):
 		shutil.rmtree(trained_dir)
 	os.makedirs(trained_dir)
@@ -65,7 +67,7 @@ def train_cnn_rnn(max_length=1000):
 			train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
 			# Checkpoint files will be saved in this directory during training
-			checkpoint_dir = './checkpoints_' + timestamp + '/'
+			checkpoint_dir = './checkpoints_' + column + "_" + timestamp + '/'
 			if os.path.exists(checkpoint_dir):
 				shutil.rmtree(checkpoint_dir)
 			os.makedirs(checkpoint_dir)
@@ -155,6 +157,33 @@ def train_cnn_rnn(max_length=1000):
 	with open(trained_dir + 'trained_parameters.json', 'w') as outfile:
 		json.dump(params, outfile, indent=4, sort_keys=True, ensure_ascii=False)
 
+column_list = [
+     "location_traffic_convenience",
+     "location_distance_from_business_district",
+     "location_easy_to_find",
+     "service_wait_time",
+     "service_waiters_attitude",
+     "service_parking_convenience",
+     "service_serving_speed",
+     "price_level",
+     "price_cost_effective",
+     "price_discount",
+     "environment_decoration",
+     "environment_noise",
+     "environment_space",
+     "environment_cleaness",
+     "dish_portion",
+     "dish_taste",
+     "dish_look",
+     "dish_recommendation",
+     "others_overall_experience",
+     "others_willing_to_consume_again"
+]
+
+
 if __name__ == '__main__':
-	# python3 train.py ./dataset/data_reform/train_reform_content_after_cut.csv ./training_config.json
-	train_cnn_rnn(max_length=1000)
+
+	maxlength = 1000
+	for column in column_list:
+		train_path = "./dataset/data_reform/train_reform_content_after_cut.csv"
+		train_cnn_rnn(path=train_path, max_length=maxlength, column=column)
