@@ -14,17 +14,18 @@ class TextCNNRNN(object):
 
 		l2_loss = tf.constant(0.0)
 
-		with tf.device('/cpu:0'), tf.name_scope('embedding'):
-			if not non_static:
-				W = tf.constant(embedding_mat, name='W')
-			else:
-				W = tf.Variable(embedding_mat, name='W')
-			self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x)
-			emb = tf.expand_dims(self.embedded_chars, -1)
+		for d in ['/cpu:0', '/cpu:1']:
+			with tf.device(d), tf.name_scope('embedding'):
+				if not non_static:
+					W = tf.constant(embedding_mat, name='W')
+				else:
+					W = tf.Variable(embedding_mat, name='W')
+				self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x)
+				emb = tf.expand_dims(self.embedded_chars, -1)
 
-		pooled_concat = []
-		reduced = np.int32(np.ceil((sequence_length) * 1.0 / max_pool_size))
-		
+			pooled_concat = []
+			reduced = np.int32(np.ceil((sequence_length) * 1.0 / max_pool_size))
+
 		for i, filter_size in enumerate(filter_sizes):
 			with tf.name_scope('conv-maxpool-%s' % filter_size):
 
@@ -57,7 +58,7 @@ class TextCNNRNN(object):
 
 		#lstm_cell = tf.nn.rnn_cell.DropoutWrapper(lstm_cell, output_keep_prob=self.dropout_keep_prob)
 		lstm_cell = tf.contrib.rnn.DropoutWrapper(lstm_cell, output_keep_prob=self.dropout_keep_prob)
-		
+
 
 		self._initial_state = lstm_cell.zero_state(self.batch_size, tf.float32)
 		#inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, reduced, pooled_concat)]
@@ -86,7 +87,7 @@ class TextCNNRNN(object):
 			self.predictions = tf.argmax(self.scores, 1, name='predictions')
 
 		with tf.name_scope('loss'):
-			losses = tf.nn.softmax_cross_entropy_with_logits(labels = self.input_y, logits = self.scores) #  only named arguments accepted            
+			losses = tf.nn.softmax_cross_entropy_with_logits(labels = self.input_y, logits = self.scores) #  only named arguments accepted
 			self.loss = tf.reduce_mean(losses) + l2_reg_lambda * l2_loss
 
 		with tf.name_scope('accuracy'):

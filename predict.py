@@ -23,8 +23,8 @@ def load_trained_params(trained_dir):
 	return params, words_index, labels, embedding_mat
 
 def load_test_data(test_file, labels):
-	df = pd.read_csv(test_file, sep='|')
-	select = ['Descript']
+	df = pd.read_csv(test_file, sep=',')
+	select = ['content']
 
 	df = df.dropna(axis=0, how='any', subset=select)
 	test_examples = df[select[0]].apply(lambda x: data_helper.clean_str(x).split(' ')).tolist()
@@ -35,8 +35,8 @@ def load_test_data(test_file, labels):
 	label_dict = dict(zip(labels, one_hot))
 
 	y_ = None
-	if 'Category' in df.columns:
-		select.append('Category')
+	if 'location_traffic_convenience' in df.columns:
+		select.append('location_traffic_convenience')
 		y_ = df[select[1]].apply(lambda x: label_dict[x]).tolist()
 
 	not_select = list(set(df.columns) - set(select))
@@ -123,8 +123,8 @@ def predict_unseen_data():
 
 			# Save the predictions back to file
 			df['NEW_PREDICTED'] = predict_labels
-			columns = sorted(df.columns, reverse=True)
-			df.to_csv(predicted_dir + 'predictions_all.csv', index=False, columns=columns, sep='|')
+			columns = sorted(df.columns, reverse=False)
+			df.to_csv(predicted_dir + 'predictions_all.csv', index=False, columns=columns, sep=',')
 
 			if y_test is not None:
 				y_test = np.array(np.argmax(y_test, axis=1))
@@ -134,5 +134,5 @@ def predict_unseen_data():
 			logging.critical('Prediction is complete, all files have been saved: {}'.format(predicted_dir))
 
 if __name__ == '__main__':
-	# python3 predict.py ./trained_results_1478563595/ ./data/small_samples.csv
+	# python3 predict.py ./trained_results_1478563595/ ./dataset/valid_content_after_cut.csv
 	predict_unseen_data()
