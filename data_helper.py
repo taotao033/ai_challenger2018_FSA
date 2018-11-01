@@ -13,6 +13,7 @@ from pprint import pprint
 from collections import Counter
 from tensorflow.contrib import learn
 
+
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -98,6 +99,25 @@ def clean_str(s):
 	s = re.sub("😊", " ", s)
 	s = re.sub("😝", " ", s)
 	s = re.sub("😰", " ", s)
+	s = re.sub("😅", " ", s)
+	s = re.sub("😢", " ", s)
+	s = re.sub("😏", " ", s)
+	s = re.sub("😳", " ", s)
+	s = re.sub("😔", " ", s)
+	s = re.sub("😜", " ", s)
+	s = re.sub("😂", " ", s)
+	s = re.sub("ϖ", " ", s)
+	s = re.sub("⌒", " ", s)
+	s = re.sub("🍞", " ", s)
+	s = re.sub("\u200b", " ", s)
+	s = re.sub("Ő", " ", s)
+	s = re.sub("０", " ", s)
+	s = re.sub("🍴", " ", s)
+	s = re.sub("σ", " ", s)
+	s = re.sub("◇", " ", s)
+	s = re.sub("▂", " ", s)
+	s = re.sub("ↂ", " ", s)
+	s = re.sub("💖", " ", s)
 	s = re.sub("🙏", " ", s)
 	s = re.sub("〈", " ", s)
 	s = re.sub("∠", " ", s)
@@ -324,31 +344,45 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 			yield shuffled_data[start_index:end_index]
 
 
-def load_data(filename, max_length, column):
-	df = pd.read_csv(filename, encoding="utf-8")
+def load_data(train_filename, val_filename, max_length, column):
+	train_df = pd.read_csv(train_filename, encoding="utf-8")
+	val_df = pd.read_csv(val_filename, encoding="utf-8")
 	selected = ['content', column]
-	non_selected = list(set(df.columns) - set(selected))
+	selected_val = ['content', column]
+	non_selected = list(set(train_df.columns) - set(selected))
+	non_selected_val = list(set(val_df.columns) - set(selected))
 
-	df = df.drop(non_selected, axis=1)
-	df = df.dropna(axis=0, how='any', subset=selected)
-	df = df.reindex(np.random.permutation(df.index))
+	train_df = train_df.drop(non_selected, axis=1)
+	train_df = train_df.dropna(axis=0, how='any', subset=selected)
+	train_df = train_df.reindex(np.random.permutation(train_df.index))
 
-	labels = sorted(list(set(df[selected[1]].tolist())))   #sort ascending, after do this ,labels = [-2, -1, 0, 1]
+	labels = sorted(list(set(train_df[selected[1]].tolist())))   #sort ascending, after do this ,labels = [-2, -1, 0, 1]
 	num_labels = len(labels)
 	one_hot = np.zeros((num_labels, num_labels), int)
 	np.fill_diagonal(one_hot, 1)
 	label_dict = dict(zip(labels, one_hot))#{-2: array([1, 0, 0, 0]), -1: array([0, 1, 0, 0]), 0: array([0, 0, 1, 0]), 1: array([0, 0, 0, 1])}
 
-	x_raw = df[selected[0]].apply(lambda x: clean_str(x).split(' ')).tolist()
-	y_raw = df[selected[1]].apply(lambda y: label_dict[y]).tolist()
+	x_raw = train_df[selected[0]].apply(lambda x: clean_str(x).split(' ')).tolist()
+	y_raw = train_df[selected[1]].apply(lambda y: label_dict[y]).tolist()
+	x_raw_val = val_df[selected[0]].apply(lambda x: clean_str(x).split(' ')).tolist()
+	y_raw_val = val_df[selected[1]].apply(lambda y: label_dict[y]).tolist()
+
 	#print(x_raw)
 	x_raw = pad_sentences(x_raw, forced_sequence_length=max_length)
+	x_raw_val = pad_sentences(x_raw_val, forced_sequence_length=max_length)
 
-	vocabulary, vocabulary_inv = build_vocab(x_raw)
+	vocabulary_dict, vocabulary = build_vocab(x_raw)
+	vocabulary_dict_val, vocabulary_val = build_vocab(x_raw_val)
 
-	x = np.array([[vocabulary[word] for word in sentence] for sentence in x_raw])
+	vocabulary_dict.update(vocabulary_dict_val)#update vocabulary dict
+	vocabulary = vocabulary + vocabulary_val
+
+	x = np.array([[vocabulary_dict[word] for word in sentence] for sentence in x_raw])
+	x_val = np.array([[vocabulary_dict[word] for word in sentence] for sentence in x_raw_val])
 	y = np.array(y_raw)
-	return x, y, vocabulary, vocabulary_inv, df, labels
+	y_val = np.array(y_raw_val)
+
+	return x, y, x_val, y_val, vocabulary_dict, vocabulary, train_df, labels
 
 
 if __name__ == "__main__":

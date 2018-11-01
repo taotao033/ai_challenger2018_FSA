@@ -1,5 +1,5 @@
 {
-    "batch_size": 128,
+    "batch_size": 256,
     "dropout_keep_prob": 0.7,
     "embedding_dim": 300,
     "evaluate_every": 200,
@@ -8,6 +8,6 @@
     "l2_reg_lambda": 0.0,
     "max_pool_size": 4,
     "non_static": false,
-    "num_epochs": 30,
+    "num_epochs": 20,
     "num_filters": 32 
 }

@@ -9,8 +9,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from text_cnn_rnn import TextCNNRNN
+import logging
 
-logging.getLogger().setLevel(logging.INFO)
+#logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] <%(processName)s> (%(threadName)s) %(message)s')
+logger = logging.getLogger(__name__)
+
 
 def load_trained_params(trained_dir):
 	params = json.loads(open(trained_dir + 'trained_parameters.json').read())
@@ -83,16 +87,16 @@ def predict_unseen_data(column, model_path, pre_path):
 		sess = tf.Session(config=session_conf)
 		with sess.as_default():
 			cnn_rnn = TextCNNRNN(
-				embedding_mat = embedding_mat,
-				non_static = params['non_static'],
-				hidden_unit = params['hidden_unit'],
-				sequence_length = len(x_test[0]),
-				max_pool_size = params['max_pool_size'],
-				filter_sizes = map(int, params['filter_sizes'].split(",")),
-				num_filters = params['num_filters'],
-				num_classes = len(labels),
-				embedding_size = params['embedding_dim'],
-				l2_reg_lambda = params['l2_reg_lambda'])
+				embedding_mat=embedding_mat,
+				non_static=params['non_static'],
+				hidden_unit=params['hidden_unit'],
+				sequence_length=len(x_test[0]),
+				max_pool_size=params['max_pool_size'],
+				filter_sizes=map(int, params['filter_sizes'].split(",")),
+				num_filters=params['num_filters'],
+				num_classes=len(labels),
+				embedding_size=params['embedding_dim'],
+				l2_reg_lambda=params['l2_reg_lambda'])
 
 			def real_len(batches):
 				return [np.ceil(np.argmin(batch + [0]) * 1.0 / params['max_pool_size']) for batch in batches]
@@ -112,7 +116,7 @@ def predict_unseen_data(column, model_path, pre_path):
 			saver = tf.train.Saver(tf.all_variables())
 			saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
 			saver.restore(sess, checkpoint_file)
-			logging.critical('{} has been loaded'.format(checkpoint_file))
+			logger.critical('{} has been loaded'.format(checkpoint_file))
 
 			batches = data_helper.batch_iter(list(x_test), params['batch_size'], 1, shuffle=False)
 
@@ -131,9 +135,10 @@ def predict_unseen_data(column, model_path, pre_path):
 			if y_test is not None:
 				y_test = np.array(np.argmax(y_test, axis=1))
 				accuracy = sum(np.array(predictions) == y_test) / float(len(y_test))
-				logging.critical('The prediction accuracy is: {}'.format(accuracy))
+				logger.critical('The prediction accuracy is: {}'.format(accuracy))
 
-			logging.critical('Prediction is complete, all files have been saved: {}'.format(predicted_dir))
+			logger.critical("%s Prediction is complete" % column)
+			#logger.critical('Prediction is complete, all files have been saved: {}'.format(predicted_dir))
 
 
 column_list = [
@@ -166,3 +171,14 @@ if __name__ == '__main__':
 		model_path = "./trained_results_" + column
 		pre_path = "./dataset/valid_content_after_cut.csv"
 		predict_unseen_data(column, model_path, pre_path)
+	logger.info("Prediction is complete, start merger data")
+
+	#next step:merger predicted labels
+	df = pd.read_csv("./dataset/valid.csv", encoding="utf-8")
+	for column in column_list:
+		df_predicted = pd.read_csv('./predicted_results_' + column + '/' + 'predictions_all.csv', encoding="utf-8")
+		df[column] = df_predicted['NEW_PREDICTED']
+	predict_saved_path = "./output/val_predicted.csv"
+	df.to_csv(predict_saved_path, index=False, sep=",", encoding="utf-8")
+	logger.info("Complete all prediction,predict results have been saved:{}".format(predict_saved_path))
+
