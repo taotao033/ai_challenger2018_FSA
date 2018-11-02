@@ -319,10 +319,25 @@ def pad_sentences(sentences, padding_word="<PAD/>", forced_sequence_length=None)
 	return padded_sentences
 
 
-def build_vocab(sentences):
-	word_counts = Counter(itertools.chain(*sentences))
-	vocabulary_inv = [word[0] for word in word_counts.most_common()]
-	vocabulary = {word: index for index, word in enumerate(vocabulary_inv)}
+def build_vocab(s1, s2, forced_sequence_length):
+
+	if os.path.exists("vocab.json") & os.path.exists("vocab_inv.json"):
+		with open("vocab.json", encoding="utf-8") as f:
+			vocabulary = json.load(f)
+		with open("vocab_inv.json", encoding="utf-8") as f2:
+			vocabulary_inv = json.load(f2)
+
+	else:
+		sentents_merge = s1 + s2
+		x_raw = pad_sentences(sentents_merge, forced_sequence_length=forced_sequence_length)
+		word_counts = Counter(itertools.chain(*x_raw))
+		vocabulary_inv = [word[0] for word in word_counts.most_common()]
+		vocabulary = {word: index for index, word in enumerate(vocabulary_inv)}
+		with open("vocab.json", encoding="utf-8", mode="w") as f:
+			json.dump(vocabulary, f)
+		with open("vocab_inv.json", encoding="utf-8", mode="w") as f2:
+			json.dump(vocabulary_inv, f2)
+
 	return vocabulary, vocabulary_inv
 
 
@@ -348,9 +363,9 @@ def load_data(train_filename, val_filename, max_length, column):
 	train_df = pd.read_csv(train_filename, encoding="utf-8")
 	val_df = pd.read_csv(val_filename, encoding="utf-8")
 	selected = ['content', column]
-	selected_val = ['content', column]
+	#selected_val = ['content', column]
 	non_selected = list(set(train_df.columns) - set(selected))
-	non_selected_val = list(set(val_df.columns) - set(selected))
+	#non_selected_val = list(set(val_df.columns) - set(selected))
 
 	train_df = train_df.drop(non_selected, axis=1)
 	train_df = train_df.dropna(axis=0, how='any', subset=selected)
@@ -367,15 +382,10 @@ def load_data(train_filename, val_filename, max_length, column):
 	x_raw_val = val_df[selected[0]].apply(lambda x: clean_str(x).split(' ')).tolist()
 	y_raw_val = val_df[selected[1]].apply(lambda y: label_dict[y]).tolist()
 
-	#print(x_raw)
+	vocabulary_dict, vocabulary = build_vocab(x_raw, x_raw_val, forced_sequence_length=max_length)
+
 	x_raw = pad_sentences(x_raw, forced_sequence_length=max_length)
 	x_raw_val = pad_sentences(x_raw_val, forced_sequence_length=max_length)
-
-	vocabulary_dict, vocabulary = build_vocab(x_raw)
-	vocabulary_dict_val, vocabulary_val = build_vocab(x_raw_val)
-
-	vocabulary_dict.update(vocabulary_dict_val)#update vocabulary dict
-	vocabulary = vocabulary + vocabulary_val
 
 	x = np.array([[vocabulary_dict[word] for word in sentence] for sentence in x_raw])
 	x_val = np.array([[vocabulary_dict[word] for word in sentence] for sentence in x_raw_val])
@@ -385,32 +395,5 @@ def load_data(train_filename, val_filename, max_length, column):
 	return x, y, x_val, y_val, vocabulary_dict, vocabulary, train_df, labels
 
 
-if __name__ == "__main__":
-	#train_file = './dataset/data_reform/train_reform_content_after_cut_mini.csv'
-	#x, y, vocab, vocab_inv, df, labels = load_data(train_file, max_length=1000)
-	# df = pd.read_csv("./dataset/valid.csv", encoding="utf-8")
-	# content = df["content"]
-	# content_list = seg_word(content)
-	# df["content"] = content_list
-	# df.to_csv("./dataset/valid_content_after_cut.csv", index=False, sep=",", encoding="utf-8")
-	#
-	balance_data_dict = get_balance_train_data(path="./dataset/data_reform/train_reform_content_after_cut.csv")
-	data_frame = pd.DataFrame({"content": balance_data_dict["location_traffic_convenience"][0],
-							"location_traffic_convenience": balance_data_dict["location_traffic_convenience"][1]})
 
-	#data_frame.to_csv("./dataset/data_reform/balance_location_traffic_convenience.csv", index=False, sep=",", encoding="utf-8")
-	#
-	# df = pd.read_csv("./dataset/data_reform/balance_location_traffic_convenience.csv", encoding="utf-8", header=None)
-	ds = data_frame.sample(frac=1)
-	ds.to_csv("new_files_balance.csv", index=False, sep=",", encoding="utf-8")
 
-	print("the number of -2: " + str(len(ds[ds["location_traffic_convenience"] == -2]["location_traffic_convenience"])))
-	print("the number of -1: " + str(len(ds[ds["location_traffic_convenience"] == -1]["location_traffic_convenience"])))
-	print("the number of 0: " + str(len(ds[ds["location_traffic_convenience"] == 0]["location_traffic_convenience"])))
-	print("the number of 1: " + str(len(ds[ds["location_traffic_convenience"] == 1]["location_traffic_convenience"])))
-	#print(str(len(ds[ds["location_traffic_convenience"] == "location_traffic_convenience"])))
-	# df = pd.read_csv("./new_files_update.csv", encoding="utf-8")
-	# #print(len(df[df["location_traffic_convenience"] == -2]))
-	# print(len(df[df["location_traffic_convenience"] == 0]))
-	# print(len(df[df["location_traffic_convenience"] == -1]))
-	#df_new.to_csv("./new_files_update.csv", index=False, sep=",", encoding="utf-8")
