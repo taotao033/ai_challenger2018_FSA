@@ -1,5 +1,5 @@
 {
-    "batch_size": 300,
+    "batch_size": 512,
     "dropout_keep_prob": 0.8,
     "embedding_dim": 300,
     "evaluate_every": 200,
