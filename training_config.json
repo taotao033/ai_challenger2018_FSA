@@ -1,6 +1,6 @@
 {
-    "batch_size": 256,
-    "dropout_keep_prob": 0.7,
+    "batch_size": 300,
+    "dropout_keep_prob": 0.8,
     "embedding_dim": 300,
     "evaluate_every": 200,
     "filter_sizes": "3,4,5",
