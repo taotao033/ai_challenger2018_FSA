@@ -139,7 +139,7 @@ def train_cnn_rnn(train_path, val_path, max_length, column):
 					logging.critical('Best accuracy {} at step {}'.format(best_accuracy, best_at_step))
 		logger.critical('Training is complete, testing the best model on x_test and y_test')
 
-		# Save the model files to trained_dir. predict.py needs trained model files.
+		# Save the model files to trained_dir. evaluate.py needs trained model files.
 		saver.save(sess, trained_dir + "best_model.ckpt")
 
 		# Evaluate x_test and y_test
@@ -152,9 +152,9 @@ def train_cnn_rnn(train_path, val_path, max_length, column):
 			total_test_correct += int(num_test_correct)
 		logger.critical('Accuracy on test set: {}'.format(float(total_test_correct) / len(y_test)))
 
-	# Save trained parameters and files since predict.py needs them
-	with open(trained_dir + 'words_index.json', 'w') as outfile:
-		json.dump(vocabulary, outfile, indent=4, ensure_ascii=False)
+	# Save trained parameters and files since evaluate.py needs them
+	# with open(trained_dir + 'words_index.json', 'w') as outfile:
+	# 	json.dump(vocabulary_dict, outfile, indent=4, ensure_ascii=False)
 	with open(trained_dir + 'embeddings.pickle', 'wb') as outfile:
 		pickle.dump(embedding_mat, outfile, pickle.HIGHEST_PROTOCOL)
 	with open(trained_dir + 'labels.json', 'w') as outfile:

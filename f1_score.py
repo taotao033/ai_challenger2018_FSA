@@ -1,32 +1,6 @@
 import pandas as pd
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
-
-def presion_and_recall(y_predict, y_label, class_type):
-    size = len(y_label)
-
-    TP = 0
-    FN = 0
-    FP = 0
-
-    for i in range(size):
-
-        if y_label[i] == class_type and y_predict[i] == class_type:
-            TP += 1
-            continue
-        if y_label[i] == class_type:
-            FN += 1
-            continue
-        if y_predict[i] == class_type:
-            FP += 1
-
-    presion = TP / (TP + FP)
-    recall = TP / (TP + FN)
-
-    return presion, recall
-
-
-test_list = ["location_traffic_convenience"]
 
 key_list1 = [
     "location_traffic_convenience",
@@ -50,28 +24,35 @@ key_list1 = [
     "others_overall_experience",
     "others_willing_to_consume_again"
 ]
-key_list2 = [
-    "location",
-    "service",
-    "price",
-    "environment",
-    "dish",
-    "others"
-]
 
 
 def f1_macro():
-    df = pd.read_csv("./predicted_results_1540988977/predictions_all.csv")#predict
-    df_val = pd.read_csv("./dataset/valid.csv")#real
+    df = pd.read_csv("./output/val_predicted.csv", encoding='utf-8')  # predicted
+    df_val = pd.read_csv("./dataset/valid.csv", encoding='utf-8')  # really
 
-    f1_per_column = open("./output/f1_score_location_traffic_convenience.txt", 'a+')
+    f1_per_column = open("./output/f1_score_cnn_rnn_val.txt", 'a+')
+    accuracy_sum = 0
+    precision_sum = 0
+    recall_sum = 0
     f1_sum = 0
+    for column in key_list1:
+        accuracy = accuracy_score(df_val[column], df[column], normalize=True)
+        precision = precision_score(df_val[column], df[column], average='macro')
+        recall = recall_score(df_val[column], df[column], average='macro')
+        f1 = f1_score(df_val[column], df[column], average='macro')
+        f1_per_column.write("f1_score_" + column + ": " + str(f1) + "\n")
 
-    for column in test_list:
-        f1 = f1_score(df_val[column], df["NEW_PREDICTED"], average='macro')
-        f1_per_column.write(column + '-f1_score: ' + str(f1) + '\n')
+        accuracy_sum += accuracy
+        precision_sum += precision
+        recall_sum += recall
         f1_sum += f1
-    average_f1 = f1_sum / len(test_list)
+    average_accuracy = accuracy_sum / len(key_list1)
+    average_precision = precision_sum / len(key_list1)
+    average_recall = recall_sum / len(key_list1)
+    average_f1 = f1_sum / len(key_list1)
+    f1_per_column.write("\n" + 'average_accuracy: ' + str(average_accuracy) + '\n')
+    f1_per_column.write('average_precision: ' + str(average_precision) + '\n')
+    f1_per_column.write('average_recall: ' + str(average_recall) + '\n')
     f1_per_column.write('average_f1: ' + str(average_f1))
     f1_per_column.close()
     if average_f1 >= 0.750:

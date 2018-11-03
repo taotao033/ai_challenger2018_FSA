@@ -1,9 +1,7 @@
 import os
-import sys
 import json
 import shutil
 import pickle
-import logging
 import data_helper
 import numpy as np
 import pandas as pd
@@ -11,7 +9,6 @@ import tensorflow as tf
 from text_cnn_rnn import TextCNNRNN
 import logging
 
-#logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] <%(processName)s> (%(threadName)s) %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -77,7 +74,6 @@ def predict_unseen_data(column, model_path, pre_path):
 	if y_ is not None:
 		y_test = np.asarray(y_)
 
-	timestamp = trained_dir.split('/')[-2].split('_')[-1]
 	predicted_dir = './predicted_results_' + column + '/'
 	if os.path.exists(predicted_dir):
 		shutil.rmtree(predicted_dir)
@@ -139,7 +135,6 @@ def predict_unseen_data(column, model_path, pre_path):
 				logger.critical('The prediction accuracy is: {}'.format(accuracy))
 
 			logger.critical("%s Prediction is complete" % column)
-			#logger.critical('Prediction is complete, all files have been saved: {}'.format(predicted_dir))
 
 
 column_list = [
@@ -166,7 +161,6 @@ column_list = [
 ]
 
 if __name__ == '__main__':
-	# python3 evaluate.py ./trained_results_1478563595/ ./dataset/valid_content_after_cut.csv
 
 	for column in column_list:
 		model_path = "./trained_results_" + column

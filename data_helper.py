@@ -395,5 +395,13 @@ def load_data(train_filename, val_filename, max_length, column):
 	return x, y, x_val, y_val, vocabulary_dict, vocabulary, train_df, labels
 
 
+if __name__ == "__main__":
+
+	df = pd.read_csv("./dataset/testa.csv", encoding="utf-8")
+	content = df["content"]
+	content_list = seg_word(content)
+	df["content"] = content_list
+	df.to_csv("./dataset/testa_content_after_cut.csv", index=False, sep=",", encoding="utf-8")
+
 
 

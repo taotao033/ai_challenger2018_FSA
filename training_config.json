@@ -2,7 +2,7 @@
     "batch_size": 512,
     "dropout_keep_prob": 0.8,
     "embedding_dim": 300,
-    "evaluate_every": 200,
+    "evaluate_every":200,
     "filter_sizes": "3,4,5",
     "hidden_unit": 300,
     "l2_reg_lambda": 0.0,

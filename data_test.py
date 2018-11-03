@@ -5,15 +5,15 @@ import re
 #
 # print(str.strip())
 
-#if __name__ == "__main__":
-
-    # train_file = './dataset/data_reform/train_reform_content_after_cut_mini.csv'
-	# x, y, vocab, vocab_inv, df, labels = load_data(train_file, max_length=1000)
-	# df = pd.read_csv("./dataset/valid.csv", encoding="utf-8")
-	# content = df["content"]
-	# content_list = seg_word(content)
-	# df["content"] = content_list
-	# df.to_csv("./dataset/valid_content_after_cut.csv", index=False, sep=",", encoding="utf-8")
+# if __name__ == "__main__":
+#
+#     train_file = './dataset/data_reform/train_reform_content_after_cut_mini.csv'
+#     x, y, vocab, vocab_inv, df, labels = load_data(train_file, max_length=1000)
+#     df = pd.read_csv("./dataset/valid.csv", encoding="utf-8")
+# 	content = df["content"]
+# 	content_list = seg_word(content)
+# 	df["content"] = content_list
+# 	df.to_csv("./dataset/valid_content_after_cut.csv", index=False, sep=",", encoding="utf-8")
 	#
 	# balance_data_dict = get_balance_train_data(path="./dataset/data_reform/train_reform_content_after_cut.csv")
 	# data_frame = pd.DataFrame({"content": balance_data_dict["location_traffic_convenience"][0],
