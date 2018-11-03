@@ -4,9 +4,9 @@ label after one-hot:
 
 data_helper.py : There are many methods to process data. 
 
-evaluate.py : use validationset to evaluate these models,generate validation files accordding to samples format.
+evaluate.py : Using validationset to evaluate these models,generate validation files accordding to samples format.
 
-f1_score.py : calculate validationset F1_measure.
+f1_score.py : Calculate validationset F1_measure.
 
-predict.py : predict testaset and submit.
+predict.py : Predict testaset and submit.
   
