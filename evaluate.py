@@ -57,11 +57,9 @@ def map_word_to_index(examples, words_index):
 	return x_
 
 def predict_unseen_data(column, model_path, pre_path):
-	#trained_dir = sys.argv[1]
 	trained_dir = model_path
 	if not trained_dir.endswith('/'):
 		trained_dir += '/'
-	#test_file = sys.argv[2]
 	test_file = pre_path
 
 	params, words_index, labels, embedding_mat = load_trained_params(trained_dir)
@@ -74,7 +72,7 @@ def predict_unseen_data(column, model_path, pre_path):
 	if y_ is not None:
 		y_test = np.asarray(y_)
 
-	predicted_dir = './predicted_results_' + column + '/'
+	predicted_dir = './val_predicted_results/val_predicted_results_' + column + '/'
 	if os.path.exists(predicted_dir):
 		shutil.rmtree(predicted_dir)
 	os.makedirs(predicted_dir)
@@ -163,7 +161,7 @@ column_list = [
 if __name__ == '__main__':
 
 	for column in column_list:
-		model_path = "./trained_results_" + column
+		model_path = "./trained_results/trained_results_" + column
 		pre_path = "./dataset/valid_content_after_cut.csv"
 		predict_unseen_data(column, model_path, pre_path)
 	logger.info("Prediction is complete, start merge data")
@@ -171,7 +169,7 @@ if __name__ == '__main__':
 	#next step:merger predicted labels
 	df = pd.read_csv("./dataset/valid.csv", encoding="utf-8")
 	for column in column_list:
-		df_predicted = pd.read_csv('./predicted_results_' + column + '/' + 'predictions_all.csv', encoding="utf-8")
+		df_predicted = pd.read_csv('./val_predicted_results/val_predicted_results_' + column + '/' + 'predictions_all.csv', encoding="utf-8")
 		df[column] = df_predicted['NEW_PREDICTED']
 	predict_saved_path = "./output/val_predicted.csv"
 	df.to_csv(predict_saved_path, index=False, sep=",", encoding="utf-8")

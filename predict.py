@@ -67,7 +67,7 @@ def predict_unseen_data(column, model_path, pre_path):
 
 	x_test, y_test = np.asarray(x_), None
 
-	predicted_dir = './testa_predicted_results_' + column + '/'
+	predicted_dir = './testa_predicted_results/testa_predicted_results_' + column + '/'
 	if os.path.exists(predicted_dir):
 		shutil.rmtree(predicted_dir)
 	os.makedirs(predicted_dir)
@@ -151,7 +151,7 @@ column_list = [
 
 if __name__ == '__main__':
 	for column in column_list:
-		model_path = "./trained_results_" + column
+		model_path = "./trained_results/trained_results_" + column
 		pre_path = "./dataset/testa_content_after_cut.csv"
 		predict_unseen_data(column, model_path, pre_path)
 	logger.info("Prediction is complete, start merge data")
@@ -159,7 +159,8 @@ if __name__ == '__main__':
 	#next step:merger predicted labels
 	df = pd.read_csv("./dataset/testa.csv", encoding="utf-8")
 	for column in column_list:
-		df_predicted = pd.read_csv('./testa_predicted_results_' + column + '/' + 'predictions_all.csv', encoding="utf-8")
+		df_predicted = pd.read_csv('./testa_predicted_results/testa_predicted_results_' + column + '/' +
+								   'predictions_all.csv', encoding="utf-8")
 		df[column] = df_predicted['NEW_PREDICTED']
 	predict_saved_path = "./output/testa_predicted.csv"
 	df.to_csv(predict_saved_path, index=False, sep=",", encoding="utf-8")

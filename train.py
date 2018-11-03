@@ -47,7 +47,7 @@ def train_cnn_rnn(train_path, val_path, max_length, column):
 	# Create a directory, everything related to the training will be saved in this directory
 	timestamp = str(int(time.time()))
 	print(column + "_" + "timestamp: " + timestamp)
-	trained_dir = './trained_results_' + column + '/'
+	trained_dir = './trained_results/trained_results_' + column + '/'
 
 	if os.path.exists(trained_dir):
 		shutil.rmtree(trained_dir)
@@ -74,7 +74,7 @@ def train_cnn_rnn(train_path, val_path, max_length, column):
 		train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
 		# Checkpoint files will be saved in this directory during training
-		checkpoint_dir = './checkpoints_' + column + '/'
+		checkpoint_dir = './checkpoints/checkpoints_' + column + '/'
 		if os.path.exists(checkpoint_dir):
 			shutil.rmtree(checkpoint_dir)
 		os.makedirs(checkpoint_dir)
