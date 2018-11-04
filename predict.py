@@ -162,7 +162,7 @@ if __name__ == '__main__':
 		df_predicted = pd.read_csv('./testa_predicted_results/testa_predicted_results_' + column + '/' +
 								   'predictions_all.csv', encoding="utf-8")
 		df[column] = df_predicted['NEW_PREDICTED']
-	predict_saved_path = "./output/testa_predicted.csv"
+	predict_saved_path = "./output/testa_predicted_F1_0.51.csv"
 	df.to_csv(predict_saved_path, index=False, sep=",", encoding="utf-8")
 	logger.info("Compplete all data merge")
 	logger.info("Complete all prediction,predict results have been saved:{}".format(predict_saved_path))

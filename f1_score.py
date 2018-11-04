@@ -27,7 +27,7 @@ key_list1 = [
 
 
 def f1_macro():
-    df = pd.read_csv("./output/val_predicted.csv", encoding='utf-8')  # predicted
+    df = pd.read_csv("./output/val_predicted_F1_0.61.csv", encoding='utf-8')  # predicted
     df_val = pd.read_csv("./dataset/valid.csv", encoding='utf-8')  # really
 
     f1_per_column = open("./output/f1_score_cnn_rnn_val.txt", 'a+')

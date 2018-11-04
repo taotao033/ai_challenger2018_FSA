@@ -171,7 +171,7 @@ if __name__ == '__main__':
 	for column in column_list:
 		df_predicted = pd.read_csv('./val_predicted_results/val_predicted_results_' + column + '/' + 'predictions_all.csv', encoding="utf-8")
 		df[column] = df_predicted['NEW_PREDICTED']
-	predict_saved_path = "./output/val_predicted.csv"
+	predict_saved_path = "./output/val_predicted_F1_0.61.csv"
 	df.to_csv(predict_saved_path, index=False, sep=",", encoding="utf-8")
 	logger.info("Compplete all data merge")
 	logger.info("Complete all prediction,predict results have been saved:{}".format(predict_saved_path))
